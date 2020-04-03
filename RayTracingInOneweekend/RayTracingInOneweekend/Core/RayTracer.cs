@@ -26,14 +26,16 @@ namespace RayTracingInOneweekend.Core
                 writer.WriteLine(IMAGE_WIDTH + " " + IMAGE_HEIGHT);
                 writer.WriteLine("255");
 
-                Camera cam = new Camera();
+                double aspectRatio = IMAGE_WIDTH / IMAGE_HEIGHT;
+                Vec3 lookFrom = new Vec3(13, 2, 3);
+                Vec3 lookAt = new Vec3(0, 0, 0);
+                Vec3 vUp = new Vec3(0, 1, 0);
+                double distanceToFocus = 10.0;
+                double aperture = 0.1;
 
-                HittableList world = new HittableList();
-                world.Objects.Add(new Sphere(new Vec3(0, 0, -1), 0.5, new Lambertian(new Vec3(0.1, 0.2, 0.5))));
-                world.Objects.Add(new Sphere(new Vec3(0, -100.5, -1), 100, new Lambertian(new Vec3(0.8, 0.8, 0.0))));
-                world.Objects.Add(new Sphere(new Vec3(1, 0, -1), 0.5, new Metal(new Vec3(0.8, 0.6, 0.2), 0.3)));
-                world.Objects.Add(new Sphere(new Vec3(-1, 0, -1), 0.5, new Dielectric(1.5)));
-                world.Objects.Add(new Sphere(new Vec3(-1, 0, -1), -0.45, new Dielectric(1.5)));
+                Camera cam = new Camera(lookFrom, lookAt, vUp, 20, aspectRatio, aperture, distanceToFocus);
+
+                HittableList world = RandomScene();
 
 
                 for (int j = IMAGE_HEIGHT - 1; j >= 0 ; --j)
@@ -76,6 +78,53 @@ namespace RayTracingInOneweekend.Core
             Vec3 unitDirection = Vec3.UnitVector(r.Direction);
             double t = 0.5 * (unitDirection.Y + 1.0);
             return (1.0 - t) * new Vec3(1.0, 1.0, 1.0) + t * new Vec3(0.5, 0.7, 1.0);
+        }
+
+        private HittableList RandomScene()
+        {
+            HittableList world = new HittableList();
+
+            world.Objects.Add(new Sphere(new Vec3(0, -1000, 0), 1000, new Lambertian(new Vec3(0.5, 0.5, 0.5))));
+
+            int i = 1;
+            Vec3 differenceCenter = new Vec3(4, 0.2, 0);
+            for (int a = -11; a < 11; a++)
+            {
+                for (int b = -11; b < 11; b++)
+                {
+                    double chooseMat = RayTracerUtils.RandomDouble();
+                    Vec3 center = new Vec3(a + 0.9 * RayTracerUtils.RandomDouble(), 0.2, b + 0.9 * RayTracerUtils.RandomDouble());
+                    if ((center - differenceCenter).Length > 0.9)
+                    {
+                        if (chooseMat < 0.8)
+                        {
+                            //diffuse
+                            Vec3 albedo = Vec3.Random() * Vec3.Random();
+                            world.Objects.Add(new Sphere(center, 0.2, new Lambertian(albedo)));
+                        }
+                        else if (chooseMat < 0.95)
+                        {
+                            //metal
+                            Vec3 albedo = Vec3.Random(0.5, 1);
+                            double fuzz = RayTracerUtils.RandomDouble(0, 0.5);
+                            world.Objects.Add(new Sphere(center, 0.2, new Metal(albedo, fuzz)));
+                        }
+                        else
+                        {
+                            //glass
+                            world.Objects.Add(new Sphere(center, 0.2, new Dielectric(1.5)));
+                        }
+                    }
+                }
+            }
+
+            world.Objects.Add(new Sphere(new Vec3(0, 1, 0), 1.0, new Dielectric(1.5)));
+
+            world.Objects.Add(new Sphere(new Vec3(-4, 1, 0), 1.0, new Lambertian(new Vec3(0.4, 0.2, 0.1))));
+
+            world.Objects.Add(new Sphere(new Vec3(4, 1, 0), 1.0, new Metal(new Vec3(0.7, 0.6, 0.5), 0.0)));
+
+            return world;
         }
     }
 }

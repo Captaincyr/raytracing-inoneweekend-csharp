@@ -146,6 +146,17 @@ namespace RayTracingInOneweekend.Core
             return new Vec3(r * Math.Cos(a), r * Math.Sin(a), z);
         }
 
+        public static Vec3 RandomInUnitDisk()
+        {
+            Vec3 p;
+            do
+            {
+                p = new Vec3(RayTracerUtils.RandomDouble(-1, 1), RayTracerUtils.RandomDouble(-1, 1), 0);
+            } while (p.LengthSquared >= 1);
+
+            return p;
+        }
+
         public static Vec3 Reflect(Vec3 v, Vec3 n)
         {
             return v - 2 * Dot(v, n) * n;
