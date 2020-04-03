@@ -7,7 +7,7 @@ namespace RayTracingInOneweekend
 {
     class Program
     {
-        const string OUTPUT_PATH = @"D:\Projets\RayTracingInOneWeekend\Ouptut\";
+        const string OUTPUT_PATH = @"D:\Projets\raytracing-inoneweekend-csharp\Output\";
 
         static void Main(string[] args)
         {

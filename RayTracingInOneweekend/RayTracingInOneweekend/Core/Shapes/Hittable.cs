@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RayTracingInOneweekend.Core.Materials;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -14,6 +15,7 @@ namespace RayTracingInOneweekend.Core.Shapes
         public double T;
         public Vec3 P;
         public Vec3 Normal;
+        public Material Material;
         public bool FrontFace;
 
         public void SetFaceNormal(Ray r, Vec3 outwardNormal)

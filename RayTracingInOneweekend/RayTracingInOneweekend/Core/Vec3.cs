@@ -76,14 +76,16 @@ namespace RayTracingInOneweekend.Core
         {
             double scale = 1.0 / samplesPerPixel;
 
-            double r = scale * e[0];
-            double g = scale * e[1];
-            double b = scale * e[2];
+            double r = Math.Sqrt(scale * e[0]);
+            double g = Math.Sqrt(scale * e[1]);
+            double b = Math.Sqrt(scale * e[2]);
             int ri = (int)(256 * RayTracerUtils.Clamp(r, 0.0, 0.999));
             int gi = (int)(256 * RayTracerUtils.Clamp(g, 0.0, 0.999));
             int bi = (int)(256 * RayTracerUtils.Clamp(b, 0.0, 0.999));
             writer.WriteLine($"{ri} {gi} {bi}");
         }
+
+        #region Utils Methods
 
         public static double Dot(Vec3 u, Vec3 v)
         {
@@ -101,6 +103,63 @@ namespace RayTracingInOneweekend.Core
         {
             return v / v.Length;
         }
+
+        public static Vec3 Random()
+        {
+            return new Vec3(RayTracerUtils.RandomDouble(), RayTracerUtils.RandomDouble(), RayTracerUtils.RandomDouble());
+        }
+
+        public static Vec3 Random(double min, double max)
+        {
+            return new Vec3(RayTracerUtils.RandomDouble(min, max), RayTracerUtils.RandomDouble(min, max), RayTracerUtils.RandomDouble(min, max));
+        }
+
+        public static Vec3 RandomInUnitSphere()
+        {
+            Vec3 p;
+            do
+            {
+                p = Random(-1, 1);
+            } while (p.LengthSquared >= 1);
+
+            return p;
+        }
+
+        public static Vec3 RandomInHemisphere(Vec3 normal)
+        {
+            Vec3 inUnitSphere = RandomInUnitSphere();
+            if (Dot(inUnitSphere, normal) > 0.0)
+            {
+                return inUnitSphere;
+            }
+            else
+            {
+                return -inUnitSphere;
+            }
+        }
+
+        public static Vec3 RandomUnitVector()
+        {
+            double a = RayTracerUtils.RandomDouble(0, 2 * Math.PI);
+            double z = RayTracerUtils.RandomDouble(-1, 1);
+            double r = Math.Sqrt(1 - z * z);
+            return new Vec3(r * Math.Cos(a), r * Math.Sin(a), z);
+        }
+
+        public static Vec3 Reflect(Vec3 v, Vec3 n)
+        {
+            return v - 2 * Dot(v, n) * n;
+        }
+
+        public static Vec3 Refract(Vec3 uv, Vec3 n, double etaIOverEta)
+        {
+            double cosTheta = Dot(-uv, n);
+            Vec3 rOutParallel = etaIOverEta * (uv + cosTheta * n);
+            Vec3 rOutPerp = -Math.Sqrt(1.0 - rOutParallel.LengthSquared) * n;
+            return rOutParallel + rOutPerp;
+        }
+
+        #endregion
 
     }
 }

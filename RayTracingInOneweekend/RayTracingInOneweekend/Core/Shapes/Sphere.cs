@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RayTracingInOneweekend.Core.Materials;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -8,11 +9,13 @@ namespace RayTracingInOneweekend.Core.Shapes
     {
         public Vec3 Center { get; set; }
         public double Radius { get; set; }
+        public Material Material { get; set; }
 
-        public Sphere(Vec3 center, double radius)
+        public Sphere(Vec3 center, double radius, Material material)
         {
             Center = center;
             Radius = radius;
+            Material = material;
         }
 
         public override bool Hit(Ray r, double tMin, double tMax, ref HitRecord rec)
@@ -32,6 +35,7 @@ namespace RayTracingInOneweekend.Core.Shapes
                     rec.P = r.At(rec.T);
                     Vec3 outwardNormal = (rec.P - Center) / Radius;
                     rec.SetFaceNormal(r, outwardNormal);
+                    rec.Material = Material;
                     return true;
                 }
                 temp = (-halfB + root) / a;
@@ -41,6 +45,7 @@ namespace RayTracingInOneweekend.Core.Shapes
                     rec.P = r.At(rec.T);
                     Vec3 outwardNormal = (rec.P - Center) / Radius;
                     rec.SetFaceNormal(r, outwardNormal);
+                    rec.Material = Material;
                     return true;
                 }
             }
