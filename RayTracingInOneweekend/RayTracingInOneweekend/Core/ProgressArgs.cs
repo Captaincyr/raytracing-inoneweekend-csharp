@@ -6,11 +6,11 @@ namespace RayTracingInOneweekend.Core
 {
     public class ProgressArgs : EventArgs
     {
-        public ProgressArgs(int lineRemaining)
+        public ProgressArgs(double percentage)
         {
-            RemainingLines = lineRemaining;
+            Percentage = percentage;
         }
 
-        public int RemainingLines { get; set; }
+        public double Percentage { get; set; }
     }
 }

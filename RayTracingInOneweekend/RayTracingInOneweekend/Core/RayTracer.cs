@@ -3,8 +3,11 @@ using RayTracingInOneweekend.Core.Shapes;
 using RayTracingInOneweekend.Utils;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace RayTracingInOneweekend.Core
 {
@@ -20,6 +23,8 @@ namespace RayTracingInOneweekend.Core
 
         public void Output(string path)
         {
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
             using (StreamWriter writer = new StreamWriter(path))
             {
                 writer.WriteLine("P3");
@@ -36,12 +41,14 @@ namespace RayTracingInOneweekend.Core
                 Camera cam = new Camera(lookFrom, lookAt, vUp, 20, aspectRatio, aperture, distanceToFocus);
 
                 HittableList world = RandomScene();
+                Vec3[,] colors = new Vec3[IMAGE_HEIGHT, IMAGE_WIDTH];
 
+                int linesRemaining = IMAGE_HEIGHT;
 
-                for (int j = IMAGE_HEIGHT - 1; j >= 0 ; --j)
+                Parallel.For(0, IMAGE_HEIGHT, j =>
                 {
-                    Progress(this, new ProgressArgs(j + 1));
-                    for (int i = 0; i < IMAGE_WIDTH; ++i)
+                    // We handle each pixel of the line on a different thread to speed up the process
+                    Parallel.For(0, IMAGE_WIDTH, i =>
                     {
                         Vec3 color = new Vec3();
                         for (int s = 0; s < SAMPLES_PER_PIXEL; ++s)
@@ -51,10 +58,32 @@ namespace RayTracingInOneweekend.Core
                             Ray r = cam.GetRay(u, v);
                             color += RayColor(r, world, MAX_DEPTH);
                         }
-                        color.WriteColor(writer, SAMPLES_PER_PIXEL);
+
+                        lock (colors)
+                        {
+                            colors[j, i] = color;
+                        }
+
+                    });
+
+                    double percentage = 100.0 - (double)--linesRemaining / IMAGE_HEIGHT * 100.0;
+                    Progress(this, new ProgressArgs(percentage));
+                });
+
+                // Output the colors in the file
+                for (int j = IMAGE_HEIGHT - 1; j >= 0; --j)
+                {
+                    for (int i = 0; i < IMAGE_WIDTH; ++i)
+                    {
+                        colors[j, i].WriteColor(writer, SAMPLES_PER_PIXEL);
                     }
                 }
             }
+
+            sw.Stop();
+
+            Console.WriteLine();
+            Console.WriteLine($"Time: {sw.Elapsed.Minutes}:{sw.Elapsed.Seconds:00}");
         }
 
         private Vec3 RayColor(Ray r, Hittable world, int depth)

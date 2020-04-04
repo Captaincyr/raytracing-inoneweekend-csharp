@@ -23,7 +23,7 @@ namespace RayTracingInOneweekend
 
         static void ProgressHandler(object sender, ProgressArgs e)
         {
-            Console.WriteLine("Remaining lines: " + e.RemainingLines + " ...");
+            Console.Write($"\r{e.Percentage}% ...                     ");
         } 
     }
 }
